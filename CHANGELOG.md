@@ -2,5 +2,14 @@
 
 ## 0.1.1 (2021-12-27)
 
-- Add support for `GERAPY_IGNORE_RESOURCE_TYPES`
-- Add support for retrying
+- First version of Playwright, add basic support for:
+  - Proxy
+  - Auto Installation
+  - Setting Cookies
+  - Screenshot
+  - Evaluating Script
+  - Wait for Elements
+  - Wait loading control
+  - Setting Timeout
+  - Pretending Webdriver
+  
