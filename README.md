@@ -167,8 +167,8 @@ GERAPY_PLAYWRIGHT_SCREENSHOT = {
 
 - url: request url
 - callback: callback
-- one of "load", "domcontentloaded", "networkidle0", "networkidle2".
-  see https://miyakogi.github.io/playwright/reference.html#playwright.page.Page.goto, default is `domcontentloaded`
+- wait_until: one of "load", "domcontentloaded", "networkidle"
+  see [https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state](https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state), default is `domcontentloaded`
 - wait_for: wait for some element to load, also supports dict
 - script: script to execute
 - actions: actions defined for execution of Page object
@@ -178,8 +178,7 @@ GERAPY_PLAYWRIGHT_SCREENSHOT = {
 - timeout: load timeout, override `GERAPY_PLAYWRIGHT_DOWNLOAD_TIMEOUT`
 - ignore_resource_types: ignored resource types, override `GERAPY_PLAYWRIGHT_IGNORE_RESOURCE_TYPES`
 - pretend: pretend as normal browser, override `GERAPY_PLAYWRIGHT_PRETEND`
-- screenshot: ignored resource types, see
-  https://miyakogi.github.io/playwright/_modules/playwright/page.html#Page.screenshot,
+- screenshot: ignored resource types, see [https://playwright.dev/python/docs/api/class-page#page-screenshot](https://playwright.dev/python/docs/api/class-page#page-screenshot),
   override `GERAPY_PLAYWRIGHT_SCREENSHOT`
 
 For example, you can configure PlaywrightRequest as:
