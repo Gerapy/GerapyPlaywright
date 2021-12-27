@@ -17,7 +17,7 @@ js = '''async () => {
 }'''
 
 
-async def execute_action(page: Page):
+async def execute_action(page):
     await page.evaluate('() => { document.title = "Hello World"; }')
     return 1
 

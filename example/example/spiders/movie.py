@@ -14,7 +14,7 @@ class MovieSpider(scrapy.Spider):
     base_url = 'https://antispider1.scrape.center'
     max_page = 10
     custom_settings = {
-        'GERAPY_PLAYWRIGHT_PRETEND': False
+        'GERAPY_PLAYWRIGHT_PRETEND': True
     }
 
     def start_requests(self):
@@ -25,10 +25,10 @@ class MovieSpider(scrapy.Spider):
         for page in range(1, self.max_page + 1):
             url = f'{self.base_url}/page/{page}'
             logger.debug('start url %s', url)
-            cookies = {
-                'name': 'germey'
-            }
-            yield PlaywrightRequest(url, callback=self.parse_index, priority=10, wait_for='.item', pretend=True, cookies=cookies)
+            # cookies = {
+            #     'name': 'germey'
+            # }
+            yield PlaywrightRequest(url, callback=self.parse_index, priority=10, wait_for='.item')
 
     def parse_index(self, response):
         """

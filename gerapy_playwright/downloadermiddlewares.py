@@ -1,8 +1,8 @@
 import asyncio
 import sys
 import urllib.parse
-from io import BytesIO
 import twisted.internet
+from io import BytesIO
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 from scrapy.http import HtmlResponse
 from scrapy.utils.python import global_object_name
@@ -10,6 +10,7 @@ from twisted.internet.asyncioreactor import AsyncioSelectorReactor
 from twisted.internet.defer import Deferred
 from gerapy_playwright.pretend import SCRIPTS as PRETEND_SCRIPTS
 from gerapy_playwright.settings import *
+from gerapy_playwright.utils import install_playwright, is_playwright_installed
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -87,7 +88,14 @@ class PlaywrightMiddleware(object):
         logging_level = settings.get(
             'GERAPY_PLAYWRIGHT_LOGGING_LEVEL', GERAPY_PLAYWRIGHT_LOGGING_LEVEL)
         # logging.getLogger('websockets').setLevel(logging_level)
-        # logging.getLogger('playwright').setLevel(logging_level)
+        logging.getLogger('playwright').setLevel(logging_level)
+
+        playwright_installed = is_playwright_installed()
+        if not playwright_installed:
+            logger.info('playwright libraries not installed, start to install')
+            install_playwright()
+        else:
+            logger.info('playwright libraries already installed')
 
         # init settings
         cls.window_width = settings.get(
@@ -96,8 +104,8 @@ class PlaywrightMiddleware(object):
             'GERAPY_PLAYWRIGHT_WINDOW_HEIGHT', GERAPY_PLAYWRIGHT_WINDOW_HEIGHT)
         cls.default_user_agent = settings.get('GERAPY_PLAYWRIGHT_DEFAULT_USER_AGENT',
                                               GERAPY_PLAYWRIGHT_DEFAULT_USER_AGENT)
-        # cls.headless = settings.get(
-        #     'GERAPY_PLAYWRIGHT_HEADLESS', GERAPY_PLAYWRIGHT_HEADLESS)
+        cls.headless = settings.get(
+            'GERAPY_PLAYWRIGHT_HEADLESS', GERAPY_PLAYWRIGHT_HEADLESS)
         # cls.dumpio = settings.get(
         #     'GERAPY_PLAYWRIGHT_DUMPIO', GERAPY_PLAYWRIGHT_DUMPIO)
         # cls.ignore_https_errors = settings.get('GERAPY_PLAYWRIGHT_IGNORE_HTTPS_ERRORS',
@@ -134,8 +142,8 @@ class PlaywrightMiddleware(object):
                                             settings.get('DOWNLOAD_TIMEOUT', GERAPY_PLAYWRIGHT_DOWNLOAD_TIMEOUT))
         # cls.ignore_resource_types = settings.get('GERAPY_PLAYWRIGHT_IGNORE_RESOURCE_TYPES',
         #                                          GERAPY_PLAYWRIGHT_IGNORE_RESOURCE_TYPES)
-        # cls.screenshot = settings.get(
-        #     'GERAPY_PLAYWRIGHT_SCREENSHOT', GERAPY_PLAYWRIGHT_SCREENSHOT)
+        cls.screenshot = settings.get(
+            'GERAPY_PLAYWRIGHT_SCREENSHOT', GERAPY_PLAYWRIGHT_SCREENSHOT)
         cls.pretend = settings.get(
             'GERAPY_PLAYWRIGHT_PRETEND', GERAPY_PLAYWRIGHT_PRETEND)
         cls.sleep = settings.get(
@@ -146,7 +154,7 @@ class PlaywrightMiddleware(object):
         cls.max_retry_times = settings.getint('RETRY_TIMES')
         cls.retry_http_codes = set(int(x)
                                    for x in settings.getlist('RETRY_HTTP_CODES'))
-        # cls.priority_adjust = settings.getint('RETRY_PRIORITY_ADJUST')
+        cls.priority_adjust = settings.getint('RETRY_PRIORITY_ADJUST')
         cls.proxy = settings.get('GERAPY_PLAYWRIGHT_PROXY')
         cls.proxy_credential = settings.get(
             'GERAPY_PLAYWRIGHT_PROXY_CREDENTIAL')
@@ -166,12 +174,7 @@ class PlaywrightMiddleware(object):
             return
 
         options = {
-            # 'headless': self.headless,
-            # 'dumpio': self.dumpio,
-            # 'devtools': self.devtools,
-            # 'args': [
-            #     f'--window-size={self.window_width},{self.window_height}',
-            # ]
+            'headless': self.headless,
         }
         # if self.executable_path:
         #     options['executablePath'] = self.executable_path
@@ -231,19 +234,19 @@ class PlaywrightMiddleware(object):
         logger.debug('set options %s', options)
 
         # set default user_agent
-        _default_user_agent = self.default_user_agent
+        _user_agent = self.default_user_agent
         # get Scrapy request ua, exclude default('Scrapy/2.5.0 (+https://scrapy.org)')
         if 'Scrapy' not in request.headers.get('User-Agent').decode():
-            _default_user_agent = request.headers.get(
+            _user_agent = request.headers.get(
                 'User-Agent').decode()
 
         playwright = await async_playwright().start()
-        browser = await playwright.chromium.launch()
+        browser = await playwright.chromium.launch(**options)
 
         context = await browser.new_context(
             viewport={'width': self.window_width,
                       'height': self.window_height},
-            user_agent=_default_user_agent
+            user_agent=_user_agent
         )
 
         # set cookies
@@ -251,35 +254,23 @@ class PlaywrightMiddleware(object):
         domain = parse_result.hostname
         _cookies = []
         if isinstance(request.cookies, dict):
-            _cookies = [{'name': k, 'value': v, 'domain': domain}
+            _cookies = [{'name': k, 'value': v, 'domain': domain, 'path': '/'}
                         for k, v in request.cookies.items()]
         else:
             for _cookie in _cookies:
                 if isinstance(_cookie, dict) and 'domain' not in _cookie.keys():
                     _cookie['domain'] = domain
-        context.add_cookies(_cookies)
+                if isinstance(_cookie, dict) and 'path' not in _cookie.keys():
+                    _cookie['path'] = '/'
+        if len(_cookies):
+            await context.add_cookies(_cookies)
 
         page = await context.new_page()
-        # await page.goto("http://playwright.dev")
-
-        # browser = await launch(options)
-        # page = None
-
-        # try:
-        #     page = await browser.newPage()
-        # except NetworkError:
-        #     logger.error(
-        #         'network error occurred while launching playwright page')
-        #     await page.close()
-        #     await browser.close()
-        #     return self._retry(request, 504, spider)
 
         if _pretend:
             logger.debug('PRETEND_SCRIPTS is run')
             for script in PRETEND_SCRIPTS:
                 await page.add_init_script(script=script)
-
-        await page.setCookie(*_cookies)
 
         # # the headers must be set using request interception
         # await page.setRequestInterception(self.enable_request_interception)
@@ -305,7 +296,9 @@ class PlaywrightMiddleware(object):
         _timeout = self.download_timeout
         if playwright_meta.get('timeout') is not None:
             _timeout = playwright_meta.get('timeout')
-        page.set_default_timeout(_timeout)
+        logger.debug('timeout %s', _timeout)
+        # timeout is `ms` instead of `s`, so need to multiply 1000
+        page.set_default_timeout(_timeout * 1000)
 
         logger.debug('crawling %s', request.url)
 
@@ -318,9 +311,9 @@ class PlaywrightMiddleware(object):
                 options['wait_until'] = playwright_meta.get('wait_until')
             logger.debug('request %s with options %s', request.url, options)
             response = await page.goto(**options)
-        except (PlaywrightTimeoutError):
-            logger.error(
-                'error rendering url %s using playwright', request.url)
+        except PlaywrightTimeoutError:
+            logger.exception(
+                'error rendering url %s using playwright', request.url, exc_info=True)
             await page.close()
             await browser.close()
             return self._retry(request, 504, spider)
@@ -367,7 +360,6 @@ class PlaywrightMiddleware(object):
         # body = str.encode(content)
 
         # screenshot
-        # TODO: maybe add support for `enabled` sub attribute
         _screenshot = self.screenshot
         if playwright_meta.get('screenshot') is not None:
             _screenshot = playwright_meta.get('screenshot')
@@ -386,10 +378,6 @@ class PlaywrightMiddleware(object):
         if not response:
             logger.error(
                 'get null response by playwright of url %s', request.url)
-
-        # # Necessary to bypass the compression middleware (?)
-        # response.headers.pop('content-encoding', None)
-        # response.headers.pop('Content-Encoding', None)
 
         response = HtmlResponse(
             page.url,
