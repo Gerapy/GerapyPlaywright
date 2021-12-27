@@ -1,0 +1,8 @@
+version: "3"
+services:
+  gerapy-playwright-example:
+    container_name: "gerapy-playwright-example"
+    restart: always
+    build: .
+    image: "germey/gerapy-playwright-example"
+    command: "python3 run.py"
