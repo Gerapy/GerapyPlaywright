@@ -296,7 +296,6 @@ class PlaywrightMiddleware(object):
         _timeout = self.download_timeout
         if playwright_meta.get('timeout') is not None:
             _timeout = playwright_meta.get('timeout')
-        logger.debug('timeout %s', _timeout)
         # timeout is `ms` instead of `s`, so need to multiply 1000
         page.set_default_timeout(_timeout * 1000)
 

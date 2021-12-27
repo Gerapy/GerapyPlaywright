@@ -8,7 +8,7 @@ There are two ways to run this example:
 
 ```shell script
 pip3 install -r requierments.txt
-playwright-install
+playwright install
 python3 run.py
 ```
 
