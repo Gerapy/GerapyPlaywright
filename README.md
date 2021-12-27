@@ -252,7 +252,7 @@ For more detail, please see [example](./example).
 
 Also you can directly run with Docker:
 
-```
+```shell
 docker run germey/gerapy-playwright-example
 ```
 

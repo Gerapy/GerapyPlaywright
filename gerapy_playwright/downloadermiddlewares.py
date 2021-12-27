@@ -210,12 +210,6 @@ class PlaywrightMiddleware(object):
         if playwright_meta.get('pretend') is not None:
             # get local pretend setting to overwrite global
             _pretend = playwright_meta.get('pretend')
-        # if _pretend:
-        #     options['ignoreDefaultArgs'] = [
-        #         '--enable-automation'
-        #     ]
-        #     options['args'].append(
-        #         '--disable-blink-features=AutomationControlled')
 
         # set proxy and proxy credential
         _proxy = self.proxy

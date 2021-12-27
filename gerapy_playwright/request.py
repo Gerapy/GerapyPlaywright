@@ -13,8 +13,8 @@ class PlaywrightRequest(Request):
         """
         :param url: request url
         :param callback: callback
-        :param one of "load", "domcontentloaded", "networkidle0", "networkidle2".
-                see https://miyakogi.github.io/playwright/reference.html#playwright.page.Page.goto, default is `domcontentloaded`
+        :param wait_until: one of "load", "domcontentloaded", "networkidle".
+                see https://playwright.dev/python/docs/api/class-page#page-wait-for-load-state, default is `domcontentloaded`
         :param wait_for: wait for some element to load, also supports dict
         :param script: script to execute
         :param actions: actions defined for execution of Page object
@@ -25,7 +25,7 @@ class PlaywrightRequest(Request):
         :param ignore_resource_types: ignored resource types, override `GERAPY_PLAYWRIGHT_IGNORE_RESOURCE_TYPES`
         :param pretend: pretend as normal browser, override `GERAPY_PLAYWRIGHT_PRETEND`
         :param screenshot: ignored resource types, see
-                https://miyakogi.github.io/playwright/_modules/playwright/page.html#Page.screenshot,
+                https://playwright.dev/python/docs/api/class-page#page-screenshot,
                 override `GERAPY_PLAYWRIGHT_SCREENSHOT`
         :param args:
         :param kwargs:
