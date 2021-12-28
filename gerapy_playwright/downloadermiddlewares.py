@@ -11,6 +11,7 @@ from twisted.internet.defer import Deferred
 from gerapy_playwright.pretend import SCRIPTS as PRETEND_SCRIPTS
 from gerapy_playwright.settings import *
 from gerapy_playwright.utils import install_playwright, is_playwright_installed
+from playwright._impl._api_types import Error as PlaywrightError
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -262,7 +263,7 @@ class PlaywrightMiddleware(object):
         page = await context.new_page()
 
         if _pretend:
-            logger.debug('PRETEND_SCRIPTS is run')
+            logger.debug('try to pretend webdriver for url %s', request.url)
             for script in PRETEND_SCRIPTS:
                 await page.add_init_script(script=script)
 
@@ -304,7 +305,7 @@ class PlaywrightMiddleware(object):
                 options['wait_until'] = playwright_meta.get('wait_until')
             logger.debug('request %s with options %s', request.url, options)
             response = await page.goto(**options)
-        except PlaywrightTimeoutError:
+        except (PlaywrightTimeoutError, PlaywrightError):
             logger.exception(
                 'error rendering url %s using playwright', request.url, exc_info=True)
             await page.close()
@@ -315,7 +316,8 @@ class PlaywrightMiddleware(object):
         if playwright_meta.get('wait_for'):
             _wait_for = playwright_meta.get('wait_for')
             try:
-                logger.debug('waiting for %s', _wait_for)
+                logger.debug('waiting for %s of url %s',
+                             _wait_for, request.url)
                 if isinstance(_wait_for, dict):
                     await page.wait_for_selector(**_wait_for)
                 else:
@@ -345,12 +347,11 @@ class PlaywrightMiddleware(object):
         _sleep = self.sleep
         if playwright_meta.get('sleep') is not None:
             _sleep = playwright_meta.get('sleep')
-        if _sleep is not None:
-            logger.debug('sleep for %ss', _sleep)
+        if _sleep is not None and _sleep is not 0:
+            logger.debug('sleep for %ss of url %s', _sleep, request.url)
             await asyncio.sleep(_sleep)
 
         content = await page.content()
-        # body = str.encode(content)
 
         # screenshot
         _screenshot = self.screenshot
@@ -358,13 +359,14 @@ class PlaywrightMiddleware(object):
             _screenshot = playwright_meta.get('screenshot')
         screenshot = None
         if _screenshot:
-            logger.debug('taking screenshot using args %s', _screenshot)
+            logger.debug('taking screenshot using args %s of url %s',
+                         _screenshot, request.url)
             screenshot = await page.screenshot(**_screenshot)
             if isinstance(screenshot, bytes):
                 screenshot = BytesIO(screenshot)
 
         # close page and browser
-        logger.debug('close playwright')
+        logger.debug('close playwright of url %s', request.url)
         await page.close()
         await browser.close()
 
