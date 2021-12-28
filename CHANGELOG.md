@@ -1,5 +1,19 @@
 # Gerapy Playwright Changelog
 
+## 0.2.0 (2021-12-28)
+
+- New Feature: Add support for:
+  - Specifying `channel` for launching
+  - Specifying `executablePath` for launching
+  - Specifying `slowMo` for launching
+  - Specifying `devtools` for launching
+  - Specifying `--disable-extensions` in args for launching
+  - Specifying `--hide-scrollbars` in args for launching
+  - Specifying `--no-sandbox` in args for launching
+  - Specifying `--disable-setuid-sandbox` in args for launching
+  - Specifying `--disable-gpu` in args for launching
+- Update: change `GERAPY_PLAYWRIGHT_SLEEP` default to 0
+
 ## 0.1.2 (2021-12-28)
 
 - Fix: Add retrying logic for PlaywrightError

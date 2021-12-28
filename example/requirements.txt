@@ -1,1 +1,1 @@
-gerapy-playwright
+gerapy-playwright==0.1.2

@@ -107,12 +107,10 @@ class PlaywrightMiddleware(object):
                                               GERAPY_PLAYWRIGHT_DEFAULT_USER_AGENT)
         cls.headless = settings.get(
             'GERAPY_PLAYWRIGHT_HEADLESS', GERAPY_PLAYWRIGHT_HEADLESS)
-        # cls.dumpio = settings.get(
-        #     'GERAPY_PLAYWRIGHT_DUMPIO', GERAPY_PLAYWRIGHT_DUMPIO)
-        # cls.ignore_https_errors = settings.get('GERAPY_PLAYWRIGHT_IGNORE_HTTPS_ERRORS',
-        #                                        GERAPY_PLAYWRIGHT_IGNORE_HTTPS_ERRORS)
-        # cls.slow_mo = settings.get(
-        #     'GERAPY_PLAYWRIGHT_SLOW_MO', GERAPY_PLAYWRIGHT_SLOW_MO)
+        cls.channel = settings.get(
+            'GERAPY_PLAYWRIGHT_CHANNEL', GERAPY_PLAYWRIGHT_CHANNEL)
+        cls.slow_mo = settings.get(
+            'GERAPY_PLAYWRIGHT_SLOW_MO', GERAPY_PLAYWRIGHT_SLOW_MO)
         # cls.ignore_default_args = settings.get('GERAPY_PLAYWRIGHT_IGNORE_DEFAULT_ARGS',
         #                                        GERAPY_PLAYWRIGHT_IGNORE_DEFAULT_ARGS)
         # cls.handle_sigint = settings.get(
@@ -121,24 +119,22 @@ class PlaywrightMiddleware(object):
         #     'GERAPY_PLAYWRIGHT_HANDLE_SIGTERM', GERAPY_PLAYWRIGHT_HANDLE_SIGTERM)
         # cls.handle_sighup = settings.get(
         #     'GERAPY_PLAYWRIGHT_HANDLE_SIGHUP', GERAPY_PLAYWRIGHT_HANDLE_SIGHUP)
-        # cls.auto_close = settings.get(
-        #     'GERAPY_PLAYWRIGHT_AUTO_CLOSE', GERAPY_PLAYWRIGHT_AUTO_CLOSE)
-        # cls.devtools = settings.get(
-        #     'GERAPY_PLAYWRIGHT_DEVTOOLS', GERAPY_PLAYWRIGHT_DEVTOOLS)
-        # cls.executable_path = settings.get(
-        #     'GERAPY_PLAYWRIGHT_EXECUTABLE_PATH', GERAPY_PLAYWRIGHT_EXECUTABLE_PATH)
-        # cls.disable_extensions = settings.get('GERAPY_PLAYWRIGHT_DISABLE_EXTENSIONS',
-        #                                       GERAPY_PLAYWRIGHT_DISABLE_EXTENSIONS)
-        # cls.hide_scrollbars = settings.get(
-        #     'GERAPY_PLAYWRIGHT_HIDE_SCROLLBARS', GERAPY_PLAYWRIGHT_HIDE_SCROLLBARS)
-        # cls.mute_audio = settings.get(
-        #     'GERAPY_PLAYWRIGHT_MUTE_AUDIO', GERAPY_PLAYWRIGHT_MUTE_AUDIO)
-        # cls.no_sandbox = settings.get(
-        #     'GERAPY_PLAYWRIGHT_NO_SANDBOX', GERAPY_PLAYWRIGHT_NO_SANDBOX)
-        # cls.disable_setuid_sandbox = settings.get('GERAPY_PLAYWRIGHT_DISABLE_SETUID_SANDBOX',
-        #                                           GERAPY_PLAYWRIGHT_DISABLE_SETUID_SANDBOX)
-        # cls.disable_gpu = settings.get(
-        #     'GERAPY_PLAYWRIGHT_DISABLE_GPU', GERAPY_PLAYWRIGHT_DISABLE_GPU)
+        cls.devtools = settings.get(
+            'GERAPY_PLAYWRIGHT_DEVTOOLS', GERAPY_PLAYWRIGHT_DEVTOOLS)
+        cls.executable_path = settings.get(
+            'GERAPY_PLAYWRIGHT_EXECUTABLE_PATH', GERAPY_PLAYWRIGHT_EXECUTABLE_PATH)
+        cls.disable_extensions = settings.get('GERAPY_PLAYWRIGHT_DISABLE_EXTENSIONS',
+                                              GERAPY_PLAYWRIGHT_DISABLE_EXTENSIONS)
+        cls.hide_scrollbars = settings.get(
+            'GERAPY_PLAYWRIGHT_HIDE_SCROLLBARS', GERAPY_PLAYWRIGHT_HIDE_SCROLLBARS)
+        cls.mute_audio = settings.get(
+            'GERAPY_PLAYWRIGHT_MUTE_AUDIO', GERAPY_PLAYWRIGHT_MUTE_AUDIO)
+        cls.no_sandbox = settings.get(
+            'GERAPY_PLAYWRIGHT_NO_SANDBOX', GERAPY_PLAYWRIGHT_NO_SANDBOX)
+        cls.disable_setuid_sandbox = settings.get('GERAPY_PLAYWRIGHT_DISABLE_SETUID_SANDBOX',
+                                                  GERAPY_PLAYWRIGHT_DISABLE_SETUID_SANDBOX)
+        cls.disable_gpu = settings.get(
+            'GERAPY_PLAYWRIGHT_DISABLE_GPU', GERAPY_PLAYWRIGHT_DISABLE_GPU)
         cls.download_timeout = settings.get('GERAPY_PLAYWRIGHT_DOWNLOAD_TIMEOUT',
                                             settings.get('DOWNLOAD_TIMEOUT', GERAPY_PLAYWRIGHT_DOWNLOAD_TIMEOUT))
         # cls.ignore_resource_types = settings.get('GERAPY_PLAYWRIGHT_IGNORE_RESOURCE_TYPES',
@@ -176,14 +172,17 @@ class PlaywrightMiddleware(object):
 
         options = {
             'headless': self.headless,
+            'args': [],
         }
-        # if self.executable_path:
-        #     options['executablePath'] = self.executable_path
-        # if self.ignore_https_errors:
-        #     options['ignoreHTTPSErrors'] = self.ignore_https_errors
-        # if self.slow_mo:
-        #     options['slowMo'] = self.slow_mo
-        # if self.ignore_default_args:
+        if self.executable_path is not None:
+            options['executablePath'] = self.executable_path
+        if self.slow_mo is not None:
+            options['slowMo'] = self.slow_mo
+        if self.devtools is not None:
+            options['devtools'] = self.devtools
+        if self.channel is not None:
+            options['channel'] = self.channel
+        # if self.ignore_default_args is not None:
         #     options['ignoreDefaultArgs'] = self.ignore_default_args
         # if self.handle_sigint:
         #     options['handleSIGINT'] = self.handle_sigint
@@ -191,20 +190,18 @@ class PlaywrightMiddleware(object):
         #     options['handleSIGTERM'] = self.handle_sigterm
         # if self.handle_sighup:
         #     options['handleSIGHUP'] = self.handle_sighup
-        # if self.auto_close:
-        #     options['autoClose'] = self.auto_close
-        # if self.disable_extensions:
-        #     options['args'].append('--disable-extensions')
-        # if self.hide_scrollbars:
-        #     options['args'].append('--hide-scrollbars')
-        # if self.mute_audio:
-        #     options['args'].append('--mute-audio')
-        # if self.no_sandbox:
-        #     options['args'].append('--no-sandbox')
-        # if self.disable_setuid_sandbox:
-        #     options['args'].append('--disable-setuid-sandbox')
-        # if self.disable_gpu:
-        #     options['args'].append('--disable-gpu')
+        if self.disable_extensions is not None:
+            options['args'].append('--disable-extensions')
+        if self.hide_scrollbars is not None:
+            options['args'].append('--hide-scrollbars')
+        if self.mute_audio is not None:
+            options['args'].append('--mute-audio')
+        if self.no_sandbox is not None:
+            options['args'].append('--no-sandbox')
+        if self.disable_setuid_sandbox is not None:
+            options['args'].append('--disable-setuid-sandbox')
+        if self.disable_gpu is not None:
+            options['args'].append('--disable-gpu')
 
         # pretend as normal browser
         _pretend = self.pretend  # get global pretend setting
