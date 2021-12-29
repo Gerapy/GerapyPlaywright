@@ -91,12 +91,17 @@ class PlaywrightMiddleware(object):
         # logging.getLogger('websockets').setLevel(logging_level)
         logging.getLogger('playwright').setLevel(logging_level)
 
-        playwright_installed = is_playwright_installed()
-        if not playwright_installed:
-            logger.info('playwright libraries not installed, start to install')
-            install_playwright()
-        else:
-            logger.info('playwright libraries already installed')
+        cls.check_playwright_installed = settings.get(
+            'GERAPY_CHECK_PLAYWRIGHT_INSTALLED', GERAPY_CHECK_PLAYWRIGHT_INSTALLED)
+
+        if cls.check_playwright_installed:
+            playwright_installed = is_playwright_installed()
+            if not playwright_installed:
+                logger.info(
+                    'playwright libraries not installed, start to install')
+                install_playwright()
+            else:
+                logger.info('playwright libraries already installed')
 
         # init settings
         cls.window_width = settings.get(
