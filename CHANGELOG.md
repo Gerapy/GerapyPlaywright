@@ -1,5 +1,9 @@
 # Gerapy Playwright Changelog
 
+## 0.2.2 (2021-12-29)
+
+- Change default to disable Check of Playwright Installation
+
 ## 0.2.1 (2021-12-29)
 
 - Add switch for disabling Check of Playwright Installation
