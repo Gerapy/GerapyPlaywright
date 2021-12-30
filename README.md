@@ -7,6 +7,7 @@ package is a module in [Gerapy](https://github.com/Gerapy/Gerapy).
 
 ```shell script
 pip3 install gerapy-playwright
+playwright install
 ```
 
 ## Usage
