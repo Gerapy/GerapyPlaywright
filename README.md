@@ -3,6 +3,10 @@
 This is a package for supporting Playwright in Scrapy, also this
 package is a module in [Gerapy](https://github.com/Gerapy/Gerapy).
 
+## Note
+
+**This package does not work on Windows**, please check this [issue](https://github.com/Gerapy/GerapyPlaywright/issues/2), please use this Package on Linux/Mac currently.
+
 ## Installation
 
 ```shell script
