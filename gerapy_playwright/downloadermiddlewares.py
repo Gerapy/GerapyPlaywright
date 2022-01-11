@@ -376,6 +376,11 @@ class PlaywrightMiddleware(object):
             logger.error(
                 'get null response by playwright of url %s', request.url)
 
+        # Necessary to bypass the compression middleware
+        headers = response.headers
+        headers.pop('content-encoding', None)
+        headers.pop('Content-Encoding', None)
+
         response = HtmlResponse(
             page.url,
             status=response.status,
