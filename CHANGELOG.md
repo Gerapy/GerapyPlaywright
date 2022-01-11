@@ -1,5 +1,9 @@
 # Gerapy Playwright Changelog
 
+## 0.2.3 (2022-01-12)
+
+- Fix bug: https://github.com/Gerapy/GerapyPlaywright/issues/3
+
 ## 0.2.2 (2021-12-29)
 
 - Change default to disable Check of Playwright Installation
