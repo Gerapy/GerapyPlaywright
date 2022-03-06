@@ -1,5 +1,9 @@
 # Gerapy Playwright Changelog
 
+## 0.2.4 (2022-03-06)
+
+- Fix bug: https://github.com/Gerapy/GerapyPlaywright/pull/8
+
 ## 0.2.3 (2022-01-12)
 
 - Fix bug: https://github.com/Gerapy/GerapyPlaywright/issues/3
