@@ -49,5 +49,5 @@ async def is_playwright_installed():
     """
     check if playwright is installed
     """
-    playwright = await async_playwright().start()
-    return exists(playwright.chromium.executable_path)
+    async with async_playwright() as playwright:
+        return exists(playwright.chromium.executable_path)
